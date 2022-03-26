@@ -81,8 +81,10 @@ print("Preparing to download object from http://" + host + path + filename)
 
 request = f'GET {path}{filename} HTTP/1.1\n' \
           f'Host: {host}\n' \
-          f'Connection: close\n' \
-          f'\n'
+          f'Connection: close\n\n\n'
+
+print("\n\nREQUEST\n\n")
+print(request)
 
 # *****************************
 # STUDENT WORK: 
@@ -94,9 +96,30 @@ request = f'GET {path}{filename} HTTP/1.1\n' \
 #      prior to transmitting it.
 # *****************************
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((host, port))
-s.sendall(bytes(request, 'ascii'))
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+except socket.error as msg:
+    print("Error: could not create socket")
+    print("Description: " + str(msg))
+    sys.exit()
+
+try:
+    s.connect((host, port))
+except socket.error as msg:
+    print("Error: Could not open connection")
+    print("Description: " + str(msg))
+    sys.exit()
+
+req_bytes = bytes(request, 'ascii')
+
+# print(req_bytes.decode('ascii'))
+
+try:
+    s.sendall(req_bytes)
+except socket.error as msg:
+    print("Error: send() failed")
+    print("Description: " + str(msg))
+    sys.exit()
 
 # *****************************
 # STUDENT WORK: 
@@ -130,11 +153,11 @@ s.close()
 # *****************************
 
 [header, data] = raw_rec_bytes.split(bytes('\r\n\r\n', 'ascii'), 2)
+print("\n\nRESPONSE\n\n")
 print(header.decode('ascii'))
 
 saved_filename = f'/tmp/{filename}'
 with open(saved_filename, "wb") as binary_file:
-    print(data)
     binary_file.write(data)
 
 # *****************************
